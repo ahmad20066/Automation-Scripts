@@ -11,7 +11,6 @@ void main() async {
 
   for (final outerItem in outerItems) {
     final items = outerItem['item'];
-    print(outerItem);
     if (items == null) {
       final item = outerItem;
       final request = item['request'];
@@ -74,9 +73,9 @@ String extractEndpoint(dynamic url) {
     } else if (url.containsKey('path')) {
       final path = url['path'];
       if (path is List) {
-        return path.join('/');
+        return cleanUrl(path.join('/'));
       } else if (path is String) {
-        return path;
+        return cleanUrl(path);
       }
     }
   }
@@ -84,13 +83,11 @@ String extractEndpoint(dynamic url) {
 }
 
 String cleanUrl(String url) {
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    final uri = Uri.parse(url);
-    return uri.path + (uri.query.isNotEmpty ? '?${uri.query}' : '');
-  } else {
-    final uri = Uri.parse('http://$url');
-    return uri.path;
-  }
+  final uri = Uri.parse(url.startsWith('http') ? url : 'http://$url');
+  var path = uri.path;
+  // Remove numeric values at the end of the path
+  path = path.replaceAll(RegExp(r'/\d+$'), '');
+  return path;
 }
 
 String resolveDuplicateName(String name, Map<String, int> nameCounts) {
